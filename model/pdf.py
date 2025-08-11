@@ -1,5 +1,3 @@
-import os
-
 from fpdf import FPDF, HTMLMixin
 from pathlib import Path
 
