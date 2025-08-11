@@ -1,25 +1,8 @@
 import asyncio, os
 from model.pdf import PDF
-from tool.crawaling_tool import crawling_namuwiki
+from util.crawaling_util import crawling_namuwiki
 from util.html_parser_util import HtmlParser
 from collections import deque
-
-# ENC = tiktoken.get_encoding("cl100k_base")
-#
-#
-# def trim_to_tokens(s, max_tokens):
-#     ids = ENC.encode(str(s))
-#     return s if len(ids) <= max_tokens else ENC.decode(ids[:max_tokens])
-#
-#
-# async def parsing(url: str):
-#     content, name = await crawlling_namuwiki(url)
-#
-#     # 입력 토큰 가드 (예: 입력 15000, 출력 1500 가정 → 총 16500)
-#     safe_doc = trim_to_tokens(content, 15000)
-#
-#     title = f"{name} 분석 보고서"
-#     return title, response
 
 async def html_to_pdf(title: str, content: str, output_path: str, doc_title: str = "문서 제목"):
     pdf = PDF(doc_title=doc_title)
