@@ -31,16 +31,3 @@ async def convert_wiki(background_tasks: BackgroundTasks, url: str = Form(...)):
         filename=os.path.basename(pdf_path),
         background=background_tasks,
     )
-
-@app.get("/download/{filename}")
-async def download_file(filename: str):
-    pdf_path = os.path.join(tempfile.gettempdir(), filename)
-
-    if not os.path.exists(pdf_path):
-        raise HTTPException(status_code=404, detail="파일을 찾을 수 없습니다.")
-
-    return FileResponse(
-        path=pdf_path,
-        filename=filename,
-        media_type='application/pdf'
-    )
