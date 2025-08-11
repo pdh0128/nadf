@@ -1,10 +1,7 @@
-import asyncio
 import re
 from urllib.parse import unquote, urlparse
 from exception.not_namuwiki_exception import NotNamuwikiException
-from model.summary_llm import SummaryLLM
 from util.httpx_client_util import HttpxClient
-from langchain.agents import tool
 from bs4 import BeautifulSoup, Comment
 
 async def clean_html(html: str) -> str:
@@ -63,18 +60,7 @@ async def crawling_namuwiki(url: str) -> BeautifulSoup:
     # res = await clean_html(soup.prettify())
     return soup
 
-
-@tool
-async def crawling_namuwiki_tool(url : str) -> str:
-    """나무위키 URL을 입력받아, 해당 페이지를 크롤링합니다."""
-    summary_llm = SummaryLLM("gpt-4o", 0)
-    res,_ = await crawling_namuwiki(url)
-    result = await summary_llm.summarize(res)
-    print(result)
-    return result
-
 if __name__ == "__main__":
     url = "https://namu.wiki/w/%EC%9A%B0%EC%A6%88%EB%A7%88%ED%82%A4%20%EB%82%98%EB%A3%A8%ED%86%A0#s-2.1"
     url2 = "https://namu.wiki/w/%EA%B3%A0%ED%86%A0%20%ED%9E%88%ED%86%A0%EB%A6%AC/%EC%9D%B8%EB%AC%BC%20%EA%B4%80%EA%B3%84"
-    asyncio.run(crawling_namuwiki_tool.ainvoke(url))
     print("end")
