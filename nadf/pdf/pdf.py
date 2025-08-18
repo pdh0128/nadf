@@ -2,6 +2,7 @@ import os
 
 from fpdf import FPDF, HTMLMixin
 from pathlib import Path
+from importlib.resources import files
 
 class PDF(FPDF, HTMLMixin):
     def __init__(self, doc_title: str = "문서 제목"):
@@ -15,9 +16,7 @@ class PDF(FPDF, HTMLMixin):
         self.set_author("windeath44")
         self.alias_nb_pages()
 
-        base_dir = Path(__file__).resolve().parent
-        font_dir = (base_dir / ".." / "fonts").resolve()
-
+        font_dir = files("nadf").joinpath("fonts")
         regular = font_dir / "NotoSerifKR-Regular.ttf"
         bold = font_dir / "NotoSerifKR-Bold.ttf"
 

@@ -1,9 +1,10 @@
 import asyncio
 
 from bs4 import BeautifulSoup
-
-from crawler_client.crawler_client import CrawlerClient
 import undetected_chromedriver as uc
+
+from nadf.crawler.http_client.crawler_client import CrawlerClient
+
 
 class SeleniumClient(CrawlerClient):
     def __init__(self):
