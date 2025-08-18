@@ -4,9 +4,8 @@ from typing import Set
 from exception.not_namuwiki_exception import NotNamuwikiException
 from bs4 import BeautifulSoup
 
-from crawler_client.selenium_client import SeleniumClient
+from nadf.crawler.http_client.selenium_client import SeleniumClient
 from parser.html_parser import HtmlParser
-from pdf.pdf import PDF
 
 
 class Crawler:

@@ -1,5 +1,5 @@
 from typing import Callable
-from exception.business_exception import BusinessException
+from nadf.exception.business_exception import BusinessException
 from fastapi import HTTPException
 
 def exception_handler(func: Callable) -> Callable:

@@ -1,4 +1,4 @@
-from exception.business_exception import BusinessException
+from nadf.exception.business_exception import BusinessException
 
 class NotNamuwikiException(BusinessException):
     def __init__(self):
