@@ -1,6 +1,5 @@
 from exception.business_exception import BusinessException
 
-
 class NotNamuwikiException(BusinessException):
     def __init__(self):
         """인자를 받지 않습니다."""

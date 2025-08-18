@@ -1,3 +1,5 @@
+import os
+
 from fpdf import FPDF, HTMLMixin
 from pathlib import Path
 
@@ -66,3 +68,21 @@ class PDF(FPDF, HTMLMixin):
         self.set_font(self.family, "B", 10)
         self.cell(0, 7, f"    {title}", 0, 1, "L")  # 더 깊은 들여쓰기
         self.ln(1)
+
+    async def create_pdf_from_namuwiki_list(self, namuwiki_list, output_path, doc_title="문서 제목"):
+        # 상대경로 안전 처리
+        output_path = os.path.abspath(output_path)
+        pdf = PDF(doc_title=doc_title)
+        pdf.add_page()
+        for title, content, level in namuwiki_list:
+            if level == 'h2':
+                pdf.h2_title(title)
+            elif level == 'h3':
+                pdf.h3_title(title)
+            elif level == 'h4':
+                pdf.h4_title(title)
+            else:
+                pdf.chapter_title(title)  # 기본값
+            pdf.chapter_body(content)
+        pdf.output(output_path)
+        return output_path
