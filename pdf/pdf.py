@@ -71,7 +71,13 @@ class PDF(FPDF, HTMLMixin):
 
     async def create_pdf_from_namuwiki_list(self, namuwiki_list, output_path):
         # 상대경로 안전 처리
+        os.makedirs(output_path, exist_ok=True)
+
         output_path = os.path.abspath(output_path)
+
+        safe_title = self.doc_title.replace("/", "_")  # 경로 안전 처리
+        output_path = os.path.join(output_path, f"{safe_title}.pdf")
+
         pdf = PDF(doc_title=self.doc_title)
         pdf.add_page()
         for title, content, level in namuwiki_list:
