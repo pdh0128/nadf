@@ -1,7 +1,7 @@
-import asyncio, os
-from model.pdf import PDF
-from util.crawaling_util import crawling_namuwiki
-from util.html_parser_util import HtmlParser
+import asyncio
+from pdf.pdf import PDF
+from crawaler import crawling_namuwiki
+from parser.html_parser import HtmlParser
 from collections import deque
 
 async def html_to_pdf(title: str, content: str, output_path: str, doc_title: str = "문서 제목"):
@@ -21,16 +21,16 @@ async def get_namuwiki_list(url):
     main_parser = HtmlParser(main_html, url)
     # 이름 추출
     name = await main_parser.extract_name()
-    print(name)
+    # print(name)
     small_topics = await main_parser.extract_small_topics()
-    print(small_topics)
+    # print(small_topics)
     namuwiki_list = []
     content_list = await main_parser.extract_content()
-    print(content_list[0])
+    # print(content_list[0])
 
     content_list_dq = deque(content_list)
     for title, uri, level in small_topics:
-        print(f"title : {title}")
+        # print(f"title : {title}")
         if title.strip() in skip_titles:
             continue
 
@@ -45,8 +45,6 @@ async def get_namuwiki_list(url):
 
         else:
             content = content_list_dq.popleft()
-            if title == "어록":
-                print(content)
             namuwiki_list.append((title, content, level))
     return name, namuwiki_list
 
@@ -55,6 +53,7 @@ async def namuwiki_to_pdf(url: str):
     name, namuwiki_list = await get_namuwiki_list(url)
     # PDF 생성
     doc_title = f"{name} 분석 보고서"
+    print(doc_title)
     output_path = f"./{doc_title}.pdf"
 
     pdf = PDF(doc_title=doc_title)

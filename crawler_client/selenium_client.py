@@ -2,7 +2,7 @@ import asyncio
 
 from bs4 import BeautifulSoup
 
-from model.crawler.crawler_client import CrawlerClient
+from crawler_client.crawler_client import CrawlerClient
 import undetected_chromedriver as uc
 
 class SeleniumClient(CrawlerClient):
@@ -13,13 +13,13 @@ class SeleniumClient(CrawlerClient):
         self.driver = uc.Chrome(options=self.options)
 
     # override
-    async def get(self, url : str):
-        await asyncio.to_thread(self.driver.get, url)
+    async def get(self, url: str):
+        def _fetch():
+            self.driver.get(url)
+            html = self.driver.page_source
+            return BeautifulSoup(html, "html.parser")
 
-        html = self.driver.page_source
-        soup = BeautifulSoup(html, "html.parser")
-
-        print(soup)
+        soup = await asyncio.to_thread(_fetch)
         return soup
 
 

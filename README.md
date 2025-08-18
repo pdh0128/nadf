@@ -9,10 +9,10 @@
 ├── decorator # 커스텀 데코레이터
 ├── exception # 커스텀 예외
 ├── main.py # 애플리케이션 진입점
-├── model # 클래스 구조 정의
+├── pdf # 클래스 구조 정의
 ├── service # 비즈니스 로직
 ├── templates # 화면 구성
-└── util # 범용 유틸 함수
+└── parser # 범용 유틸 함수
 ```
 ---
 

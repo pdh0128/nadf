@@ -3,7 +3,7 @@ import asyncio
 from bs4 import BeautifulSoup
 from httpx import AsyncClient
 
-from model.crawler.crawler_client import CrawlerClient
+from crawler_client.crawler_client import CrawlerClient
 
 HEADERS = {
     "User-Agent": (

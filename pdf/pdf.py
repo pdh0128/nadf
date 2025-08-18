@@ -69,10 +69,10 @@ class PDF(FPDF, HTMLMixin):
         self.cell(0, 7, f"    {title}", 0, 1, "L")  # 더 깊은 들여쓰기
         self.ln(1)
 
-    async def create_pdf_from_namuwiki_list(self, namuwiki_list, output_path, doc_title="문서 제목"):
+    async def create_pdf_from_namuwiki_list(self, namuwiki_list, output_path):
         # 상대경로 안전 처리
         output_path = os.path.abspath(output_path)
-        pdf = PDF(doc_title=doc_title)
+        pdf = PDF(doc_title=self.doc_title)
         pdf.add_page()
         for title, content, level in namuwiki_list:
             if level == 'h2':

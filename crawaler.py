@@ -1,8 +1,7 @@
 from exception.not_namuwiki_exception import NotNamuwikiException
-from model.crawler.httpx_client import HttpxClient
 from bs4 import BeautifulSoup
 
-from model.crawler.selenium_client import SeleniumClient
+from crawler_client.selenium_client import SeleniumClient
 
 
 async def crawling_namuwiki(url: str) -> BeautifulSoup:
