@@ -1,32 +1,30 @@
 from collections import deque
 from typing import Set
 
-from exception.not_namuwiki_exception import NotNamuwikiException
 from bs4 import BeautifulSoup
 
 from nadf.crawler.http_client.selenium_client import SeleniumClient
-from parser.html_parser import HtmlParser
+from nadf.decorator.check_namuwiki_url import check_namuwiki_url
+from nadf.parser.html_parser import HtmlParser
 
 
 class Crawler:
     def __init__(self):
         self.base_url = "https://namu.wiki"
 
+    @check_namuwiki_url
     async def crawling_namuwiki(self, url: str) -> BeautifulSoup:
-
-        if "namu.wiki" not in url:
-            raise NotNamuwikiException()
-
         http_client = SeleniumClient()
         soup = await http_client.get(url)  # soup은 BeautifulSoup 객체라고 가정
 
         # res = await clean_html(soup.prettify())
         return soup
 
+    @check_namuwiki_url
     async def get_namuwiki_list(self, url : str, skip_titles : Set[str] = {"게임", "미디어 믹스", "둘러보기"}):
         # 메인 페이지 HTML
-        main_html = await self.crawling_namuwiki(url)
-        main_parser = HtmlParser(main_html, url)
+        main_html = await self.crawling_namuwiki(url=url)
+        main_parser = HtmlParser(main_html, url=url)
         # 이름 추출
         name = await main_parser.extract_name()
         # print(name)

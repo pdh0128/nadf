@@ -3,11 +3,15 @@ from urllib.parse import unquote, urlparse
 
 from bs4 import BeautifulSoup
 
+from nadf.decorator.check_namuwiki_url import check_namuwiki_url
+
 
 class HtmlParser:
+    @check_namuwiki_url
     def __init__(self, html: BeautifulSoup, url: str):
         self.soup = html
         self.url = url
+
 
     async def extract_name(self):
         slug = unquote(urlparse(self.url).path.rsplit("/", 1)[-1])

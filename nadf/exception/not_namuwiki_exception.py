@@ -6,3 +6,5 @@ class NotNamuwikiException(BusinessException):
         message = "URL이 나무위키 형식이 아닙니다."
         status_code = 500
         super().__init__(message=message, status_code=status_code)
+
+
