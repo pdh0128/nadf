@@ -12,9 +12,8 @@ async def html_to_pdf(title: str, content: str, output_path: str, doc_title: str
     pdf.chapter_body(content)
     pdf.output(output_path)
 
-skip_titles = {"게임", "미디어믹스", "둘러보기"}
-
-
+skip_titles = {"게임", "미디어 믹스", "둘러보기"}
+base_url = "https://namu.wiki"
 
 async def get_namuwiki_list(url):
     # 메인 페이지 HTML
@@ -22,10 +21,13 @@ async def get_namuwiki_list(url):
     main_parser = HtmlParser(main_html, url)
     # 이름 추출
     name = await main_parser.extract_name()
+    print(name)
     small_topics = await main_parser.extract_small_topics()
+    print(small_topics)
     namuwiki_list = []
     content_list = await main_parser.extract_content()
     print(content_list[0])
+
     content_list_dq = deque(content_list)
     for title, uri, level in small_topics:
         print(f"title : {title}")
@@ -50,7 +52,7 @@ async def get_namuwiki_list(url):
 
 
 async def namuwiki_to_pdf(url: str):
-    name, namuwiki_list = get_namuwiki_list(url)
+    name, namuwiki_list = await get_namuwiki_list(url)
     # PDF 생성
     doc_title = f"{name} 분석 보고서"
     output_path = f"./{doc_title}.pdf"
@@ -69,9 +71,6 @@ async def extract_page_data(parser: HtmlParser) -> list[tuple[str, str, str]]:
         print(parser.url)
     return [(title, body, level) for (title, _, level), body in zip(small_topics, content)]
 
-
-
-
 if __name__ == "__main__":
-    url = "https://namu.wiki/w/%EC%9A%B0%EC%A6%88%EB%A7%88%ED%82%A4%20%EB%82%98%EB%A3%A8%ED%86%A0"
+    url = "https://namu.wiki/w/%EB%82%98%EB%A3%A8%ED%86%A0"
     asyncio.run(namuwiki_to_pdf(url))

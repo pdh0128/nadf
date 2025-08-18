@@ -1,9 +1,8 @@
-import re
-from urllib.parse import unquote, urlparse
 from exception.not_namuwiki_exception import NotNamuwikiException
-from util.httpx_client_util import HttpxClient
-from bs4 import BeautifulSoup, Comment
+from model.crawler.httpx_client import HttpxClient
+from bs4 import BeautifulSoup
 
+from model.crawler.selenium_client import SeleniumClient
 
 
 async def crawling_namuwiki(url: str) -> BeautifulSoup:
@@ -11,7 +10,7 @@ async def crawling_namuwiki(url: str) -> BeautifulSoup:
     if "namu.wiki" not in url:
         raise NotNamuwikiException()
 
-    http_client = HttpxClient()
+    http_client = SeleniumClient()
     soup = await http_client.get(url)  # soup은 BeautifulSoup 객체라고 가정
 
     # res = await clean_html(soup.prettify())

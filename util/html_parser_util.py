@@ -17,6 +17,7 @@ class HtmlParser:
         small_topics = self.soup.find_all(['h2', 'h3', 'h4'])
         small_topics_list = []
 
+
         for topic in small_topics:
             level = topic.name  # 'h2', 'h3', 'h4'
             span = topic.find('span')
@@ -29,8 +30,10 @@ class HtmlParser:
 
     async def extract_content(self) -> List[str]:
         lines = self.soup.find_all("div", class_="wJRiSuLS")
+
         result = []
         for line in lines:
             text = line.get_text(separator=" ", strip=True)
             result.append(text)
+
         return result
