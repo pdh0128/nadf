@@ -27,7 +27,6 @@ dependencies = [
   "click==8.2.1",
   "defusedxml==0.7.1",
   "fonttools==4.59.0",
-  "fpdf==1.7.2",
   "fpdf2==2.8.4",
   "h11==0.16.0",
   "httpcore==1.0.9",
