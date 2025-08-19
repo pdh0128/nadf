@@ -1,6 +1,7 @@
 import os
 import re
-
+from typing import List, Tuple
+from enum import Enum
 from fpdf import FPDF, HTMLMixin
 from importlib.resources import files
 
@@ -73,7 +74,11 @@ class PDF(FPDF, HTMLMixin):
         self.cell(0, 7, f"    {title}", 0, 1, "L")  # 더 깊은 들여쓰기
         self.ln(1)
 
-    async def create_pdf_from_namuwiki_list(self, namuwiki_list, output_path):
+    class ReturnType(Enum):
+        SAVE = "save"
+        RETURN_OBJECT = "return_object"
+
+    async def create_pdf_from_namuwiki_list(self, namuwiki_list : List[Tuple[str, str, str]], output_path : str, return_type : ReturnType = ReturnType.SAVE):
         # 상대경로 안전 처리
         os.makedirs(output_path, exist_ok=True)
 
@@ -94,5 +99,10 @@ class PDF(FPDF, HTMLMixin):
             else:
                 self.chapter_title(title)  # 기본값
             self.chapter_body(content)
-        self.output(output_path)
-        return output_path
+
+        if return_type == self.ReturnType.SAVE:
+            self.output(output_path)
+            return output_path
+        elif return_type == self.ReturnType.RETURN_OBJECT:
+            return self
+

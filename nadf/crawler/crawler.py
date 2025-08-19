@@ -1,5 +1,5 @@
 from collections import deque
-from typing import Set
+from typing import Set, List, Tuple
 
 from bs4 import BeautifulSoup
 
@@ -12,7 +12,7 @@ class Crawler:
         self.base_url = "https://namu.wiki/w"
 
 
-    async def get_namuwiki_list(self, name : str, skip_titles : Set[str] = {"게임", "미디어 믹스", "둘러보기"}):
+    async def get_namuwiki_list(self, name : str, skip_titles : Set[str] = {"게임", "미디어 믹스", "둘러보기"}) -> List[Tuple[str, str, str]]:
         # 메인 페이지 HTML
         url = f"{self.base_url}/{name}"
         main_html = await self._crawling_namuwiki(url=url)
