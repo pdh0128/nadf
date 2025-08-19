@@ -1,11 +1,11 @@
 # from typing import Callable
-# from nadf.exception.business_exception import BusinessException
+# from nadf.exception.business_exception import BaseException
 #
 # def exception_handler(func: Callable) -> Callable:
 #     def inner(*args, **kwargs):
 #         try:
 #             return func(*args, **kwargs)
-#         except BusinessException as e:
+#         except BaseException as e:
 #             print("error : ", e.message)
 #             print("status code:", e.status_code)
 #         except Exception as e:
