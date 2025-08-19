@@ -4,15 +4,14 @@ from typing import Set
 from bs4 import BeautifulSoup
 
 from nadf.crawler.http_client.selenium_client import SeleniumClient
-from nadf.decorator.check_namuwiki_url import check_namuwiki_url
 from nadf.parser.html_parser import HtmlParser
 
 
 class Crawler:
     def __init__(self):
-        self.base_url = "https://namu.wiki"
+        self.base_url = "https://namu.wiki/w"
 
-    @check_namuwiki_url()
+
     async def get_namuwiki_list(self, name : str, skip_titles : Set[str] = {"게임", "미디어 믹스", "둘러보기"}):
         # 메인 페이지 HTML
         url = f"{self.base_url}/{name}"
@@ -44,7 +43,6 @@ class Crawler:
                 namuwiki_list.append((title, content, level))
         return namuwiki_list
 
-    @check_namuwiki_url()
     async def _crawling_namuwiki(self, url: str) -> BeautifulSoup:
         http_client = SeleniumClient()
         soup = await http_client.get(url)  # soup은 BeautifulSoup 객체라고 가정
