@@ -57,16 +57,16 @@ import asyncio
 from nadf.crawler import Crawler
 from nadf.pdf import PDF
 
-async def create_pdf(url : str):
+async def create_pdf(name : str):
     crawler = Crawler()
-    name, data = await crawler.get_namuwiki_list(url)
+    name, data = await crawler.get_namuwiki_list(name)
 
     pdf = PDF(doc_title=f"{name} 분석 보고서")
     await pdf.create_pdf_from_namuwiki_list(data, "./")
 
 if __name__ == "__main__":
-    url = "https://namu.wiki/w/%EC%84%AC%EC%97%90%EC%96%B4"
-    asyncio.run(create_pdf(url))
+    name = "나루토"
+    asyncio.run(create_pdf(name))
 ```
 #### 2. CLI 명령어로 사용
 라이브러리 설치 후, CLI 명령어도 사용할 수 있습니다.

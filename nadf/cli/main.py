@@ -11,17 +11,17 @@ app = typer.Typer()
 @app.command()
 def invoke(
     path: str = typer.Option(..., "-p", help="폴더 경로"),
-    url: str = typer.Option(..., "-u", help="namuwiki URL")
+    name: str = typer.Option(..., "--name", help="namuwiki name(title)")
 ):
-    asyncio.run(_invoke(path, url))
+    asyncio.run(_invoke(path, name))
 
 
-async def _invoke(path : str, url : str):
+async def _invoke(path : str, name : str):
 
-    typer.echo(f"탐색 대상 : {url}")
+    typer.echo(f"탐색 대상 : {name}")
     spinner = RainbowDots("나무위키에서 데이터를 받아오는 중입니다", interval=0.1, max_dots=12)
     spinner.start()
-    name, namuwiki_list = await crawl(url)
+    namuwiki_list = await crawl(name)
     spinner.stop("\033[32m데이터 받기 성공!!\033[0m")
 
     sleep(1)
@@ -33,10 +33,10 @@ async def _invoke(path : str, url : str):
     spinner.stop()
 
 
-async def crawl(url):
+async def crawl(name : str):
     crawler = Crawler()
-    name, namuwiki_list = await crawler.get_namuwiki_list(url)
-    return name, namuwiki_list
+    namuwiki_list = await crawler.get_namuwiki_list(name)
+    return namuwiki_list
 
 
 async def create_pdf(name, namuwiki_list, path):

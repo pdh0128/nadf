@@ -1,4 +1,4 @@
-from nadf.exception.business_exception import BaseException
+from nadf.exception.base_exception import BaseException
 
 
 class SSLInvalidException(BaseException):
@@ -6,3 +6,5 @@ class SSLInvalidException(BaseException):
         message = "SSL 인증 실패입니다."
         status_code = 500
         super().__init__(message=message, status_code=status_code)
+
+

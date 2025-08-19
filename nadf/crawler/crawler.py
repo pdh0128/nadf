@@ -16,11 +16,8 @@ class Crawler:
     async def get_namuwiki_list(self, name : str, skip_titles : Set[str] = {"게임", "미디어 믹스", "둘러보기"}):
         # 메인 페이지 HTML
         url = f"{self.base_url}/{name}"
-        main_html = await self.crawling_namuwiki(url=url)
+        main_html = await self._crawling_namuwiki(url=url)
         main_parser = HtmlParser(main_html, url=url)
-        # 이름 추출
-        name = await main_parser.extract_name()
-        # print(name)
         small_topics = await main_parser.extract_small_topics()
         # print(small_topics)
         namuwiki_list = []
@@ -36,18 +33,16 @@ class Crawler:
             if uri.startswith("/w") and level == 'h2':
                 content_list_dq.popleft()
                 full_url = self.base_url + uri
-                html = await self.crawling_namuwiki(full_url)
+                html = await self._crawling_namuwiki(full_url)
                 parser = HtmlParser(html, full_url)
-                data = await self.extract_page_data(parser)
+                data = await self._extract_page_data(parser)
                 data = [x for x in data if x[0].strip() not in skip_titles]
                 namuwiki_list.extend(data)
 
             else:
                 content = content_list_dq.popleft()
                 namuwiki_list.append((title, content, level))
-        return name, namuwiki_list
-
-
+        return namuwiki_list
 
     @check_namuwiki_url()
     async def _crawling_namuwiki(self, url: str) -> BeautifulSoup:
