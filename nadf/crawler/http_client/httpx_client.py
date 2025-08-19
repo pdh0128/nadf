@@ -43,3 +43,4 @@ class HttpxClient(CrawlerClient):
 if __name__ == "__main__":
     client = HttpxClient()
     print(asyncio.run(client.get("https://namu.wiki/w/%EB%82%98%EB%A3%A8%ED%86%A0")))
+

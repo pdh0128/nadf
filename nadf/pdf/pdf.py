@@ -1,4 +1,5 @@
 import os
+import re
 
 from fpdf import FPDF, HTMLMixin
 from importlib.resources import files
@@ -49,6 +50,11 @@ class PDF(FPDF, HTMLMixin):
         content = str(body)
         self.set_font(self.family, "", 11)
         # 긴 문단 줄바꿈/단어 단위 개행 처리
+        content = str(body)
+        content = re.sub(r"<br\s*/?>", "\n", content)
+        content = re.sub(r"</p>", "\n", content)
+        content = re.sub(r"<.*?>", "", content)
+
         self.multi_cell(0, 6, content)
         self.ln(1)
 

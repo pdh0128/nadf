@@ -13,16 +13,9 @@ class Crawler:
         self.base_url = "https://namu.wiki"
 
     @check_namuwiki_url()
-    async def crawling_namuwiki(self, url: str) -> BeautifulSoup:
-        http_client = SeleniumClient()
-        soup = await http_client.get(url)  # soup은 BeautifulSoup 객체라고 가정
-
-        # res = await clean_html(soup.prettify())
-        return soup
-
-    @check_namuwiki_url()
-    async def get_namuwiki_list(self, url : str, skip_titles : Set[str] = {"게임", "미디어 믹스", "둘러보기"}):
+    async def get_namuwiki_list(self, name : str, skip_titles : Set[str] = {"게임", "미디어 믹스", "둘러보기"}):
         # 메인 페이지 HTML
+        url = f"{self.base_url}/{name}"
         main_html = await self.crawling_namuwiki(url=url)
         main_parser = HtmlParser(main_html, url=url)
         # 이름 추출
@@ -55,7 +48,17 @@ class Crawler:
         return name, namuwiki_list
 
 
-    async def extract_page_data(self, parser: HtmlParser) -> list[tuple[str, str, str]]:
+
+    @check_namuwiki_url()
+    async def _crawling_namuwiki(self, url: str) -> BeautifulSoup:
+        http_client = SeleniumClient()
+        soup = await http_client.get(url)  # soup은 BeautifulSoup 객체라고 가정
+
+        # res = await clean_html(soup.prettify())
+        return soup
+
+
+    async def _extract_page_data(self, parser: HtmlParser) -> list[tuple[str, str, str]]:
         small_topics = await parser.extract_small_topics()
 
         # print(small_topics)
@@ -65,8 +68,3 @@ class Crawler:
         #     print(parser.url)
         return [(title, body, level) for (title, _, level), body in zip(small_topics, content)]
 
-
-if __name__ == "__main__":
-    url = "https://namu.wiki/w/%EC%9A%B0%EC%A6%88%EB%A7%88%ED%82%A4%20%EB%82%98%EB%A3%A8%ED%86%A0#s-2.1"
-    url2 = "https://namu.wiki/w/%EA%B3%A0%ED%86%A0%20%ED%9E%88%ED%86%A0%EB%A6%AC/%EC%9D%B8%EB%AC%BC%20%EA%B4%80%EA%B3%84"
-    print("end")
