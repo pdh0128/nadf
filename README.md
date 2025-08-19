@@ -8,6 +8,9 @@
 섹션(h2/h3/h4) 구조를 보존한 PDF 생성(fpdf2 기반) <br>
 한글 폰트 포함(Noto Serif KR Regular/Bold)
 
+### 주의사항
+크롬이 설치되어 있어야 합니다.
+
 ### 빠른 설치
 ```bash
 pip install nadf
