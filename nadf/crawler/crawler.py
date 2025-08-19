@@ -12,7 +12,7 @@ class Crawler:
     def __init__(self):
         self.base_url = "https://namu.wiki"
 
-    @check_namuwiki_url
+    @check_namuwiki_url()
     async def crawling_namuwiki(self, url: str) -> BeautifulSoup:
         http_client = SeleniumClient()
         soup = await http_client.get(url)  # soup은 BeautifulSoup 객체라고 가정
@@ -20,7 +20,7 @@ class Crawler:
         # res = await clean_html(soup.prettify())
         return soup
 
-    @check_namuwiki_url
+    @check_namuwiki_url()
     async def get_namuwiki_list(self, url : str, skip_titles : Set[str] = {"게임", "미디어 믹스", "둘러보기"}):
         # 메인 페이지 HTML
         main_html = await self.crawling_namuwiki(url=url)

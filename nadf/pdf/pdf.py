@@ -1,7 +1,6 @@
 import os
 
 from fpdf import FPDF, HTMLMixin
-from pathlib import Path
 from importlib.resources import files
 
 class PDF(FPDF, HTMLMixin):
@@ -77,17 +76,17 @@ class PDF(FPDF, HTMLMixin):
         safe_title = self.doc_title.replace("/", "_")  # 경로 안전 처리
         output_path = os.path.join(output_path, f"{safe_title}.pdf")
 
-        pdf = PDF(doc_title=self.doc_title)
-        pdf.add_page()
+
+        self.add_page()
         for title, content, level in namuwiki_list:
             if level == 'h2':
-                pdf.h2_title(title)
+                self.h2_title(title)
             elif level == 'h3':
-                pdf.h3_title(title)
+                self.h3_title(title)
             elif level == 'h4':
-                pdf.h4_title(title)
+                self.h4_title(title)
             else:
-                pdf.chapter_title(title)  # 기본값
-            pdf.chapter_body(content)
-        pdf.output(output_path)
+                self.chapter_title(title)  # 기본값
+            self.chapter_body(content)
+        self.output(output_path)
         return output_path

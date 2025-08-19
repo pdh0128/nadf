@@ -1,6 +1,7 @@
 [build-system]
-requires = ["setuptools>=69", "wheel"]
+requires = ["setuptools>=65", "wheel", "packaging"]
 build-backend = "setuptools.build_meta"
+
 
 [project]
 name = "nadf"
@@ -56,3 +57,4 @@ include = ["nadf*"]
 
 [tool.setuptools.package-data]
 nadf = ["fonts/*.ttf"]
+p

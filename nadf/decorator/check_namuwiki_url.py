@@ -18,7 +18,7 @@ def _validate_namuwiki(url: Optional[str]):
 
 def check_namuwiki_url(param: str = "url"):
     """데코레이터: url 인자가 반드시 namu.wiki 포함해야 함"""
-    def decorator(func):
+    def wrapper(func):
         if asyncio.iscoroutinefunction(func):
             @functools.wraps(func)
             async def aw(*args, **kwargs):
@@ -33,4 +33,4 @@ def check_namuwiki_url(param: str = "url"):
                 _validate_namuwiki(url)
                 return func(*args, **kwargs)
             return sw
-    return decorator
+    return wrapper
