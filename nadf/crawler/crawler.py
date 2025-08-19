@@ -60,9 +60,9 @@ class Crawler:
 
         # print(small_topics)
         content = await parser.extract_content()
-        print(len(small_topics), len(content))
-        if len(small_topics) != len(content):
-            print(parser.url)
+        # print(len(small_topics), len(content))
+        # if len(small_topics) != len(content):
+        #     print(parser.url)
         return [(title, body, level) for (title, _, level), body in zip(small_topics, content)]
 
 
