@@ -57,4 +57,3 @@ include = ["nadf*"]
 
 [tool.setuptools.package-data]
 nadf = ["fonts/*.ttf"]
-p
