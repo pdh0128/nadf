@@ -18,7 +18,6 @@ def invoke(
 
 async def _invoke(path : str, url : str):
 
-
     typer.echo(f"탐색 대상 : {url}")
     spinner = RainbowDots("나무위키에서 데이터를 받아오는 중입니다", interval=0.1, max_dots=12)
     spinner.start()
@@ -46,8 +45,9 @@ async def create_pdf(name, namuwiki_list, path):
 
 
 @app.command()
-def love():
-    typer.echo(f"I love you")
+def github():
+    github_url = "https://github.com/pdh0128/nadf"
+    typer.echo(f"깃허브 주소 : {github_url}")
 
 if __name__ == "__main__":
    app()
