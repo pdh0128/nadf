@@ -5,7 +5,7 @@
 
 ### 핵심 기능
 나무위키 문서 크롤링 & 파싱 <br>
-섹션(h2/h3/h4) 구조를 보존한 PDF 생성(fpdf2 기반) <br>
+섹션 구조를 보존한 PDF 생성(fpdf2 기반) <br>
 한글 폰트 포함(Noto Serif KR Regular/Bold)
 
 ### 주의사항
