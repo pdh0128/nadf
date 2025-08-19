@@ -2,7 +2,11 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from bs4 import BeautifulSoup
 import undetected_chromedriver as uc
-from selenium.common.exceptions import WebDriverException
+from selenium.common.exceptions import (
+    WebDriverException,
+    NoSuchWindowException,
+    InvalidSessionIdException,
+)
 from nadf.crawler.http_client.crawler_client import CrawlerClient
 import ssl, urllib.request
 from nadf.exception.ssl_invalid_exception import SSLInvalidException
@@ -20,48 +24,56 @@ except Exception as e:
 
 class SeleniumClient(CrawlerClient):
     def __init__(self):
-
-        self.options = uc.ChromeOptions()
-        self.options.add_argument('--disable-blink-features=AutomationControlled')
-
-        self.options.add_argument('--headless')
-        self.options.add_argument('--disable-dev-shm-usage')
-
         self._exec = ThreadPoolExecutor(max_workers=1)
         self._loop = asyncio.get_event_loop()
-
         self._lock = asyncio.Lock()
 
-        def _init_driver():
-            driver = uc.Chrome(options=self.options, version_main=139)  # Chrome 139와 정합
+        def _new_driver():
+            opts = uc.ChromeOptions()
+            opts.add_argument("--disable-blink-features=AutomationControlled")
+            opts.add_argument("--headless=new")          # 권장
+            opts.add_argument("--disable-dev-shm-usage")
+            driver = uc.Chrome(options=opts, version_main=139)
             driver.set_page_load_timeout(30)
             return driver
 
-        self._driver_fut = self._loop.run_in_executor(self._exec, _init_driver)
+        self._new_driver = _new_driver
+        self._driver_fut = self._loop.run_in_executor(self._exec, self._new_driver)
 
     async def _run(self, fn):
-
         driver = await self._driver_fut
         return await self._loop.run_in_executor(self._exec, lambda: fn(driver))
 
     async def _recreate_driver(self):
-
         def _quit_and_create(old):
             try:
                 old.quit()
             except Exception:
                 pass
-            new = uc.Chrome(options=self.options, version_main=139)
-            new.set_page_load_timeout(30)
-            return new
+            return self._new_driver()
 
         old = await self._driver_fut
         self._driver_fut = self._loop.run_in_executor(self._exec, lambda: _quit_and_create(old))
         return await self._driver_fut
 
+    async def _ensure_alive(self):
+        def _check(drv):
+            try:
+                _ = drv.current_window_handle
+                return True
+            except Exception:
+                return False
+
+        drv = await self._driver_fut
+        alive = await self._loop.run_in_executor(self._exec, lambda: _check(drv))
+        if not alive:
+            await self._recreate_driver()
+
     # override
     async def get(self, url: str):
-        async with self._lock:  # 같은 인스턴스 동시 접근 방지
+        async with self._lock:
+            await self._ensure_alive()
+
             def _fetch(driver):
                 driver.get(url)
                 return BeautifulSoup(driver.page_source, "html.parser")
@@ -69,20 +81,15 @@ class SeleniumClient(CrawlerClient):
             try:
                 return await self._run(_fetch)
 
-            except Exception as e:
-                msg = str(e).lower()
-                # 창/탭이 먼저 닫힌 전형적 케이스 → 1회 재생성 후 재시도
-                if "no such window" in msg or "web view not found" in msg:
-                    await self._recreate_driver()
-                    return await self._run(lambda d: BeautifulSoup((d.get(url) or d.page_source), "html.parser"))
-                # 기타 드라이버 예외도 상황에 따라 재시도 가능
-                if isinstance(e, WebDriverException):
-                    await self._recreate_driver()
-                    return await self._run(lambda d: BeautifulSoup((d.get(url) or d.page_source), "html.parser"))
-                raise
+            except (NoSuchWindowException, InvalidSessionIdException) as e:
+                await self._recreate_driver()
+                return await self._run(lambda d: (d.get(url), BeautifulSoup(d.page_source, "html.parser"))[1])
+
+            except WebDriverException as e:
+                await self._recreate_driver()
+                return await self._run(lambda d: (d.get(url), BeautifulSoup(d.page_source, "html.parser"))[1])
 
     async def close(self):
-        """명시적 종료 (권장)"""
         try:
             d = await self._driver_fut
             await self._loop.run_in_executor(self._exec, d.quit)
