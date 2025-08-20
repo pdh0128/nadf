@@ -59,10 +59,10 @@ from nadf.pdf import PDF
 
 async def create_pdf(name : str):
     crawler = Crawler()
-    name, data = await crawler.get_namuwiki_list(name)
+    namuwiki_section_list = await crawler.get_namuwiki_list(name)
 
     pdf = PDF(doc_title=f"{name} 분석 보고서")
-    await pdf.create_pdf_from_namuwiki_list(data, "./")
+    await pdf.create_pdf_from_namuwiki_list(namuwiki_section_list, "./")
 
 if __name__ == "__main__":
     name = "나루토"
@@ -71,7 +71,7 @@ if __name__ == "__main__":
 #### 2. CLI 명령어로 사용
 라이브러리 설치 후, CLI 명령어도 사용할 수 있습니다.
 ```bash
-nadf invoke -p ./output -u "https://namu.wiki/w/%EC%84%AC%EC%97%90%EC%96%B4"
+nadf invoke -p ./output --name "우즈마키 나루토"
 ```
 옵션 설명:
 -p : PDF 저장 경로
