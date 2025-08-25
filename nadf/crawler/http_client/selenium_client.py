@@ -1,5 +1,12 @@
+import os
+import ssl
+import urllib.request
 import asyncio
+import subprocess
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+from typing import Optional
+
 from bs4 import BeautifulSoup
 import undetected_chromedriver as uc
 from selenium.common.exceptions import (
@@ -7,37 +14,98 @@ from selenium.common.exceptions import (
     NoSuchWindowException,
     InvalidSessionIdException,
 )
+
 from nadf.crawler.http_client.crawler_client import CrawlerClient
-import ssl, urllib.request
 from nadf.exception.ssl_invalid_exception import SSLInvalidException
 
+# ----- SSL 설정 (기존 유지) -----
 try:
     import certifi
     _cafile = certifi.where()
     _ctx = ssl.create_default_context(cafile=_cafile)
     _opener = urllib.request.build_opener(urllib.request.HTTPSHandler(context=_ctx))
     urllib.request.install_opener(_opener)
-except Exception as e:
-    print(e)
+except Exception:
     raise SSLInvalidException()
+
+
+def _detect_chrome_binary() -> str:
+    """컨테이너 내 Chrome 바이너리 경로 자동 감지(문자열 반환)."""
+    candidates = [
+        os.getenv("GOOGLE_CHROME_BIN"),
+        os.getenv("CHROME_BIN"),
+        "/usr/bin/google-chrome",
+        "/usr/bin/chromium",
+        "/usr/bin/chromium-browser",
+    ]
+    for c in candidates:
+        if c and Path(c).exists():
+            return str(c)  # 반드시 str!
+    raise RuntimeError(
+        "Chrome binary not found. Set $GOOGLE_CHROME_BIN or install google-chrome-stable."
+    )
+
+
+def _detect_version_main(chrome_bin: str) -> Optional[int]:
+    """설치된 Chrome 메이저 버전 추출 실패 시 None."""
+    # 환경변수로 강제 지정 가능: CHROME_VERSION_MAIN=139
+    env_val = os.getenv("CHROME_VERSION_MAIN")
+    if env_val and env_val.isdigit():
+        return int(env_val)
+
+    try:
+        out = subprocess.check_output([chrome_bin, "--version"], text=True).strip()
+        # 예) "Google Chrome 139.0.6487.62"
+        import re
+        m = re.search(r"(\d+)\.", out)
+        if m:
+            return int(m.group(1))
+    except Exception:
+        pass
+    return None
 
 
 class SeleniumClient(CrawlerClient):
     def __init__(self):
         self._exec = ThreadPoolExecutor(max_workers=1)
-        self._loop = asyncio.get_event_loop()
+        try:
+            self._loop = asyncio.get_running_loop()
+        except RuntimeError:
+            # 코루틴 밖에서 생성되면 기존 정책대로 loop를 생성/획득
+            self._loop = asyncio.get_event_loop()
+
         self._lock = asyncio.Lock()
 
+        # 드라이버 생성 함수
         def _new_driver():
+            chrome_bin = _detect_chrome_binary()
+            version_main = _detect_version_main(chrome_bin)
+
             opts = uc.ChromeOptions()
+            opts.binary_location = str(chrome_bin)  # 문자열 필수
             opts.add_argument("--disable-blink-features=AutomationControlled")
-            opts.add_argument("--headless=new")          # 권장
+            opts.add_argument("--headless=new")
+            opts.add_argument("--no-sandbox")
             opts.add_argument("--disable-dev-shm-usage")
-            driver = uc.Chrome(options=opts, version_main=139)
+            # (선택) 안정성 향상
+            # opts.add_argument("--disable-gpu")
+            # opts.add_argument("--disable-software-rasterizer")
+
+            # 프로필 경로는 쓰기 가능한 곳으로
+            user_data_dir = os.getenv("UC_USER_DATA_DIR", "/tmp/uc-profile")
+            opts.add_argument(f"--user-data-dir={user_data_dir}")
+
+            if version_main is not None:
+                driver = uc.Chrome(options=opts, version_main=version_main)
+            else:
+                # 버전 감지 실패 시 uc가 자동으로 맞춰줌
+                driver = uc.Chrome(options=opts)
+
             driver.set_page_load_timeout(30)
             return driver
 
         self._new_driver = _new_driver
+        # 최초 드라이버 비동기 생성
         self._driver_fut = self._loop.run_in_executor(self._exec, self._new_driver)
 
     async def _run(self, fn):
@@ -81,11 +149,8 @@ class SeleniumClient(CrawlerClient):
             try:
                 return await self._run(_fetch)
 
-            except (NoSuchWindowException, InvalidSessionIdException) as e:
-                await self._recreate_driver()
-                return await self._run(lambda d: (d.get(url), BeautifulSoup(d.page_source, "html.parser"))[1])
-
-            except WebDriverException as e:
+            except (NoSuchWindowException, InvalidSessionIdException, WebDriverException):
+                # 드라이버 재생성 후 한 번 재시도
                 await self._recreate_driver()
                 return await self._run(lambda d: (d.get(url), BeautifulSoup(d.page_source, "html.parser"))[1])
 
@@ -97,7 +162,7 @@ class SeleniumClient(CrawlerClient):
             self._exec.shutdown(wait=False)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     async def main():
         client = SeleniumClient()
         try:

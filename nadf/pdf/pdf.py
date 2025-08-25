@@ -77,8 +77,9 @@ class PDF(FPDF, HTMLMixin):
     class ReturnType(Enum):
         SAVE = "save"
         RETURN_OBJECT = "return_object"
+        RETURN_BYTES = "return_bytes"
 
-    async def create_pdf_from_namuwiki_list(self, namuwiki_list : List[Tuple[str, str, str]], output_path : str, return_type : ReturnType = ReturnType.SAVE):
+    async def create_pdf_from_namuwiki_list(self, namuwiki_list : List[Tuple[str, str, str]], output_path : str = None, return_type : ReturnType = ReturnType.SAVE):
         # 상대경로 안전 처리
         os.makedirs(output_path, exist_ok=True)
 
@@ -105,4 +106,6 @@ class PDF(FPDF, HTMLMixin):
             return output_path
         elif return_type == self.ReturnType.RETURN_OBJECT:
             return self
+        elif return_type == self.ReturnType.RETURN_BYTES:
+            return self.output(dest="S")
 
