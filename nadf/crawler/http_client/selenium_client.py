@@ -17,6 +17,9 @@ from selenium.common.exceptions import (
 
 from nadf.crawler.http_client.crawler_client import CrawlerClient
 from nadf.exception.ssl_invalid_exception import SSLInvalidException
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # ----- SSL 설정 (기존 유지) -----
 try:
