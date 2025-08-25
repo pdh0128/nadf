@@ -2,10 +2,9 @@
 requires = ["setuptools>=65", "wheel", "packaging"]
 build-backend = "setuptools.build_meta"
 
-
 [project]
 name = "nadf"
-version = "0.1.22"
+version = "0.1.27"
 description = "NamuWiki crawler & PDF utilities"
 readme = "README.md"
 requires-python = ">=3.10"

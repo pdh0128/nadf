@@ -1,8 +1,11 @@
 import os
+import pathlib
 import ssl
+import tempfile
 import urllib.request
 import asyncio
 import subprocess
+import platform
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Optional
@@ -79,31 +82,26 @@ class SeleniumClient(CrawlerClient):
 
         self._lock = asyncio.Lock()
 
-        # 드라이버 생성 함수
         def _new_driver():
-            chrome_bin = _detect_chrome_binary()
-            version_main = _detect_version_main(chrome_bin)
-
             opts = uc.ChromeOptions()
-            opts.binary_location = str(chrome_bin)  # 문자열 필수
-            opts.add_argument("--disable-blink-features=AutomationControlled")
+
+            if platform.system() == "Linux":
+                opts.binary_location = os.getenv("GOOGLE_CHROME_BIN", "/usr/bin/google-chrome")
+
             opts.add_argument("--headless=new")
             opts.add_argument("--no-sandbox")
             opts.add_argument("--disable-dev-shm-usage")
-            # (선택) 안정성 향상
-            # opts.add_argument("--disable-gpu")
-            # opts.add_argument("--disable-software-rasterizer")
+            opts.add_argument("--disable-blink-features=AutomationControlled")
+            opts.add_argument("--no-first-run")
+            opts.add_argument("--no-default-browser-check")
+            opts.add_argument("--remote-debugging-port=0")
 
-            # 프로필 경로는 쓰기 가능한 곳으로
-            user_data_dir = os.getenv("UC_USER_DATA_DIR", "/tmp/uc-profile")
+            # 깨끗한 프로필(손상된 캐시/권한 이슈 차단)
+            user_data_dir = tempfile.mkdtemp(prefix="uc-")
+            pathlib.Path(user_data_dir).mkdir(parents=True, exist_ok=True)
             opts.add_argument(f"--user-data-dir={user_data_dir}")
 
-            if version_main is not None:
-                driver = uc.Chrome(options=opts, version_main=version_main)
-            else:
-                # 버전 감지 실패 시 uc가 자동으로 맞춰줌
-                driver = uc.Chrome(options=opts)
-
+            driver = uc.Chrome(options=opts)
             driver.set_page_load_timeout(30)
             return driver
 
