@@ -5,6 +5,7 @@ from enum import Enum
 from fpdf import FPDF, HTMLMixin
 from importlib.resources import files
 
+
 class PDF(FPDF, HTMLMixin):
     def __init__(self, doc_title: str = "문서 제목"):
         super().__init__()
@@ -81,13 +82,11 @@ class PDF(FPDF, HTMLMixin):
 
     async def create_pdf_from_namuwiki_list(self, namuwiki_list : List[Tuple[str, str, str]], output_path : str = None, return_type : ReturnType = ReturnType.SAVE):
         # 상대경로 안전 처리
-        os.makedirs(output_path, exist_ok=True)
-
-        output_path = os.path.abspath(output_path)
-
-        safe_title = self.doc_title.replace("/", "_")  # 경로 안전 처리
-        output_path = os.path.join(output_path, f"{safe_title}.pdf")
-
+        if return_type == self.ReturnType.SAVE:
+            os.makedirs(output_path, exist_ok=True)
+            output_path = os.path.abspath(output_path)
+            safe_title = self.doc_title.replace("/", "_")  # 경로 안전 처리
+            output_path = os.path.join(output_path, f"{safe_title}.pdf")
 
         self.add_page()
         for title, content, level in namuwiki_list:

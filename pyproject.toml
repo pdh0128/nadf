@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nadf"
-version = "0.1.20"
+version = "0.1.22"
 description = "NamuWiki crawler & PDF utilities"
 readme = "README.md"
 requires-python = ">=3.10"

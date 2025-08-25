@@ -40,7 +40,7 @@ def _detect_chrome_binary() -> str:
     ]
     for c in candidates:
         if c and Path(c).exists():
-            return str(c)  # 반드시 str!
+            return str(c)
     raise RuntimeError(
         "Chrome binary not found. Set $GOOGLE_CHROME_BIN or install google-chrome-stable."
     )
