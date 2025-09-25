@@ -85,8 +85,7 @@ class SeleniumClient(CrawlerClient):
         def _new_driver():
             opts = uc.ChromeOptions()
 
-            if platform.system() == "Linux":
-                opts.binary_location = os.getenv("GOOGLE_CHROME_BIN", "/usr/bin/google-chrome")
+            opts.binary_location = _detect_chrome_binary()
 
             opts.add_argument("--headless=new")
             opts.add_argument("--no-sandbox")
