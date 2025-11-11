@@ -16,7 +16,11 @@ from selenium.common.exceptions import (
     WebDriverException,
     NoSuchWindowException,
     InvalidSessionIdException,
+    TimeoutException,
 )
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 from nadf.crawler.http_client.crawler_client import CrawlerClient
 from nadf.exception.ssl_invalid_exception import SSLInvalidException
@@ -40,6 +44,7 @@ def _detect_chrome_binary() -> str:
     candidates = [
         os.getenv("GOOGLE_CHROME_BIN"),
         os.getenv("CHROME_BIN"),
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",  # macOS
         "/usr/bin/google-chrome",
         "/usr/bin/chromium",
         "/usr/bin/chromium-browser",
@@ -71,6 +76,31 @@ def _detect_version_main(chrome_bin: str) -> Optional[int]:
     return None
 
 
+def _detect_chromedriver_path() -> Optional[str]:
+    """시스템에 설치된 chromedriver 경로 감지 (ARM 환경용)."""
+    # 환경변수로 강제 지정 가능: CHROMEDRIVER_PATH=/usr/bin/chromedriver
+    env_path = os.getenv("CHROMEDRIVER_PATH")
+    if env_path and Path(env_path).exists():
+        return str(env_path)
+
+    candidates = [
+        "/usr/bin/chromedriver",
+        "/usr/local/bin/chromedriver",
+    ]
+
+    for c in candidates:
+        if Path(c).exists():
+            return str(c)
+
+    return None
+
+
+def _is_arm_architecture() -> bool:
+    """ARM 아키텍처 여부 확인."""
+    machine = platform.machine().lower()
+    return "arm" in machine or "aarch64" in machine
+
+
 class SeleniumClient(CrawlerClient):
     def __init__(self):
         self._exec = ThreadPoolExecutor(max_workers=1)
@@ -85,23 +115,45 @@ class SeleniumClient(CrawlerClient):
         def _new_driver():
             opts = uc.ChromeOptions()
 
-            opts.binary_location = _detect_chrome_binary()
+            chrome_bin = _detect_chrome_binary()
+            opts.binary_location = chrome_bin
 
             opts.add_argument("--headless=new")
             opts.add_argument("--no-sandbox")
             opts.add_argument("--disable-dev-shm-usage")
+            opts.add_argument("--disable-gpu")
+            opts.add_argument("--disable-software-rasterizer")
+            opts.add_argument("--disable-extensions")
             opts.add_argument("--disable-blink-features=AutomationControlled")
             opts.add_argument("--no-first-run")
             opts.add_argument("--no-default-browser-check")
-            opts.add_argument("--remote-debugging-port=0")
+            opts.add_argument("--remote-debugging-port=9222")
 
-            # 깨끗한 프로필(손상된 캐시/권한 이슈 차단)
             user_data_dir = tempfile.mkdtemp(prefix="uc-")
             pathlib.Path(user_data_dir).mkdir(parents=True, exist_ok=True)
             opts.add_argument(f"--user-data-dir={user_data_dir}")
 
-            driver = uc.Chrome(options=opts)
-            driver.set_page_load_timeout(30)
+            version_main = _detect_version_main(chrome_bin)
+            if not version_main:
+                version_main = 142  # fallback (현재 chrome 142.x)
+
+            if _is_arm_architecture():
+                driver_path = _detect_chromedriver_path()
+                if driver_path:
+                    driver = uc.Chrome(
+                        driver_executable_path=driver_path,
+                        options=opts,
+                        version_main=version_main,
+                        use_subprocess=False,  # ARM 환경 필수
+                    )
+                else:
+                    driver = uc.Chrome(options=opts, version_main=version_main, use_subprocess=False)
+            else:
+                driver = uc.Chrome(options=opts, version_main=version_main)
+
+            driver.set_page_load_timeout(40)
+            driver.set_script_timeout(40)
+
             return driver
 
         self._new_driver = _new_driver
@@ -143,8 +195,16 @@ class SeleniumClient(CrawlerClient):
             await self._ensure_alive()
 
             def _fetch(driver):
-                driver.get(url)
-                return BeautifulSoup(driver.page_source, "html.parser")
+                try:
+                    driver.get(url)
+                except TimeoutException:
+                    try:
+                        driver.execute_script("window.stop();")  # 페이지 중단 후
+                    except Exception:
+                        pass
+
+                html = driver.page_source
+                return BeautifulSoup(html, "html.parser")
 
             try:
                 return await self._run(_fetch)
@@ -152,7 +212,7 @@ class SeleniumClient(CrawlerClient):
             except (NoSuchWindowException, InvalidSessionIdException, WebDriverException):
                 # 드라이버 재생성 후 한 번 재시도
                 await self._recreate_driver()
-                return await self._run(lambda d: (d.get(url), BeautifulSoup(d.page_source, "html.parser"))[1])
+                return await self._run(_fetch)
 
     async def close(self):
         try:
@@ -166,8 +226,10 @@ if __name__ == "__main__":
     async def main():
         client = SeleniumClient()
         try:
-            soup = await client.get("https://namu.wiki/w/%EB%82%98%EB%A3%A8%ED%86%A0")
+            print("나루토 크롤링")
+            soup = await client.get("https://namu.wiki/w/나루토")
             print(soup.title.text if soup.title else "(no title)")
+            print(soup.text)
         finally:
             await client.close()
 

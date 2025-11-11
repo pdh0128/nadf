@@ -30,7 +30,9 @@ class Crawler:
                 continue
 
             if uri.startswith("/w") and level == 'h2':
-                content_list_dq.popleft()
+                # deque가 비어있지 않으면 제거 (비어있으면 skip)
+                if content_list_dq:
+                    content_list_dq.popleft()
                 full_url = self.base_url + uri
                 html = await self._crawling_namuwiki(full_url)
                 parser = HtmlParser(html, full_url)
@@ -39,7 +41,8 @@ class Crawler:
                 namuwiki_list.extend(data)
 
             else:
-                content = content_list_dq.popleft()
+                # deque에서 콘텐츠 가져오기 (없으면 빈 문자열)
+                content = content_list_dq.popleft() if content_list_dq else ""
                 namuwiki_list.append((title, content, level))
         return namuwiki_list
 
