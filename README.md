@@ -9,6 +9,10 @@ NADF는 방대한 주제를 다루는 나무위키에서 문서를 가져와, �
 
 즉, NADF는 단순한 PDF 변환기를 넘어서, <Strong>한국어 데이터 수집 위한 실용적 도구</Strong>를 목적으로 설계되었습니다.
 
+[![nadf 동작](https://img.youtube.com/vi/bW9v7llO2CI/0.jpg)](https://youtu.be/bW9v7llO2CI)
+
+
+
 ### 프로젝트 배경 및 필요성
 #### 한국어 데이터셋 부족 문제
 영어권은 Common Crawl, Wikipedia, OpenWebText 등 다양한 대규모 공개 데이터셋이 존재합니다.
@@ -100,7 +104,9 @@ PDF를 바탕으로 데이터셋 전처리 파이프라인 구축
 
 ### 기여 방법
 PR과 Issue 모두 환영합니다!
+
 버그 리포트 시 Python 버전, 실행 로그, 재현 코드를 함께 제공해 주세요.
+
 새로운 기능/출력 포맷 제안도 적극적으로 검토합니다.
 
 ### 라이선스
